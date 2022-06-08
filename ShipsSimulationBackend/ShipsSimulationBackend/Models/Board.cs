@@ -75,12 +75,11 @@ public class Board
         return neighbours;
     }
 
-    public List<Position> GetRemainingHitPositions(Position lastHit)
+    public List<Position> GetRemainingHitPositions()
     {
         return Fields
             .Where(field => field.State == FieldState.Hit)
             .Select(field => field.Position)
-            .Where(pos => pos.Row != lastHit.Row && pos.Column != lastHit.Column)
             .ToList();
     }
 
