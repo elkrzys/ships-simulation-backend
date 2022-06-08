@@ -22,4 +22,34 @@ public class Board
             }
         }
     }
+
+    public bool AreFieldsAvailable(Position begin, Position end)
+    {
+        if (end.Row > 10 || end.Column > 10)
+        {
+            return false;
+        }
+        
+        return GetFieldsBetweenPositions(begin, end).All(ff => ff.OccupyingShip == null);
+    }
+
+    public IEnumerable<Field> GetFieldsBetweenPositions(Position begin, Position end)
+    {
+        return Fields
+            .Where(f =>
+                f.Position.Row >= begin.Row && f.Position.Column >= begin.Column &&
+                f.Position.Row <= end.Row && f.Position.Column <= end.Column);
+    }
+
+    public IEnumerable<Field> GetAvailableFields()
+    {
+        return Fields.FindAll(field =>
+            field.State != FieldState.Hit &&
+            field.State != FieldState.Miss &&
+            field.State != FieldState.Sunk);
+    }
+    public void MarkFieldsAsSunk(Ship ship)
+    {
+        Fields.FindAll(f => f.OccupyingShip.Type == ship.Type).ForEach(f => f.State = FieldState.Sunk);
+    }
 }
