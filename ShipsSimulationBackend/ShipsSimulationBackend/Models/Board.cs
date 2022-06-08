@@ -41,6 +41,49 @@ public class Board
                 f.Position.Row <= end.Row && f.Position.Column <= end.Column);
     }
 
+    public List<Field> GetAvailableNeighboursFieldsForPosition(Position position)
+    {
+        return GetAvailableFields()
+            .Where(field => GetPositionNeighbours(position)
+                .Any(pos => pos.Row == field.Position.Row && pos.Column == field.Position.Column))
+            .ToList();
+    }
+    
+    private IEnumerable<Position> GetPositionNeighbours(Position position)
+    {
+        var neighbours = new List<Position>();
+        if (position.Row > 1)
+        {
+            neighbours.Add(new Position(position.Row - 1, position.Column));
+        }
+
+        if (position.Row < 10)
+        {
+            neighbours.Add(new Position(position.Row + 1, position.Column));
+        }
+
+        if (position.Column > 1)
+        {
+            neighbours.Add(new Position(position.Row, position.Column - 1));
+        }
+
+        if (position.Column < 10)
+        {
+            neighbours.Add(new Position(position.Row, position.Column + 1));
+        }
+
+        return neighbours;
+    }
+
+    public List<Position> GetRemainingHitPositions(Position lastHit)
+    {
+        return Fields
+            .Where(field => field.State == FieldState.Hit)
+            .Select(field => field.Position)
+            .Where(pos => pos.Row != lastHit.Row && pos.Column != lastHit.Column)
+            .ToList();
+    }
+
     public IEnumerable<Field> GetAvailableFields()
     {
         return Fields.FindAll(field =>
@@ -48,8 +91,20 @@ public class Board
             field.State != FieldState.Miss &&
             field.State != FieldState.Sunk);
     }
-    public void MarkFieldsAsSunk(Ship ship)
+    public void MarkOccupiedFieldsAsSunk(Ship ship)
     {
-        Fields.FindAll(f => f.OccupyingShip.Type == ship.Type).ForEach(f => f.State = FieldState.Sunk);
+        GetFieldsOccupiedByShip(ship).ForEach(f => f.State = FieldState.Sunk);
+    }
+    
+    public void MarkFieldsAsSunkByPositions(List<Position> positions)
+    {
+        Fields.FindAll(field => positions
+                .Any(position => field.Position.Row == position.Row && field.Position.Column == position.Column))
+            .ForEach(field => field.State = FieldState.Sunk);
+    }
+
+    public List<Field> GetFieldsOccupiedByShip(Ship ship)
+    {
+        return Fields.FindAll(f => f.OccupyingShip != null && f.OccupyingShip.Type == ship.Type);
     }
 }

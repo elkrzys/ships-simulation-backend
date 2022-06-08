@@ -7,16 +7,18 @@ public class Player
     public List<Ship> Ships { get; }
     public int TotalShots { get; set; }
     public int TotalHits { get; set; }
-    public int MaxSeries { get; set; }
+    
+    private Position _lastHit;
     
     public Player()
     {
         OwnBoard = new Board();
         OpponentBoard = new Board();
+        
+        _lastHit = null;
 
         TotalShots = 0;
         TotalHits = 0;
-        MaxSeries = 0;
 
         Ships = new List<Ship>
         {
@@ -34,32 +36,11 @@ public class Player
     {
         Ships.ForEach(ship =>
         {
-            while (!PlaceShipRandomlyOrReturnFalse(ship))
+            while (true)
             {
-                PlaceShipRandomlyOrReturnFalse(ship);
+                if (PlaceShipRandomlyOrReturnFalse(ship)) break;
             }
         });
-
-        string board = "";
-
-        for (int i = 1; i < 11; i++)
-        {
-            for (int j = 1; j < 11; j++)
-            {
-                var state = OwnBoard.Fields.Find(field => field.Position.Row == i && field.Position.Column == j).State;
-                if (state == FieldState.Empty)
-                {
-                    board += "o ";
-                }
-
-                if (state == FieldState.Occupied)
-                {
-                    board += "X ";
-                }
-            }
-
-            board += "\n";
-        }
     }
 
     private Field GetRandomFieldToShot()
@@ -71,73 +52,73 @@ public class Player
 
     private Field GetNeighbourFieldToShot(Position hit)
     {
-        var neighboursPositions = new List<Position>();
-        if (hit.Row > 1)
-        {
-            neighboursPositions.Add(new Position(hit.Row - 1, hit.Column));
-        }
+        var availableFields = OpponentBoard.GetAvailableNeighboursFieldsForPosition(hit);
 
-        if (hit.Row < 10)
+        if (!availableFields.Any())
         {
-            neighboursPositions.Add(new Position(hit.Row + 1, hit.Column));
+            OpponentBoard.GetRemainingHitPositions(hit).ForEach(hitPosition => 
+                availableFields.AddRange(OpponentBoard.GetAvailableNeighboursFieldsForPosition(hitPosition)));
         }
-
-        if (hit.Column > 1)
-        {
-            neighboursPositions.Add(new Position(hit.Row, hit.Column - 1));
-        }
-
-        if (hit.Column < 10)
-        {
-            neighboursPositions.Add(new Position(hit.Row, hit.Column + 1));
-        }
-
+        
         var random = new Random();
-        var availableFields = OpponentBoard.GetAvailableFields()
-            .Where(field =>
-                neighboursPositions.Any(pos => pos.Row == field.Position.Row && pos.Column == field.Position.Column))
-            .ToList();
-
-        return availableFields[random.Next(availableFields.Count)];
+        var fieldsCount = availableFields.Count;
+        var index = random.Next(fieldsCount);
+        
+        return availableFields[index];
     }
 
-    public FireResult Fire(Position? lastHit = null)
+    public Position Fire()
     {
         ++TotalShots;
-
-        var targetField = lastHit == null ? GetRandomFieldToShot() : GetNeighbourFieldToShot(lastHit);
-        if (targetField.State == FieldState.Empty)
-        {
-            targetField.State = FieldState.Miss;
-            return new FireResult
-            {
-                Position = targetField.Position,
-                State = FieldState.Miss
-            };
-        }
-
-        ProcessFieldAndShipHit(targetField);
-        return new FireResult
-        {
-            Position = targetField.Position,
-            State = targetField.State
-        };
+        var targetField = _lastHit == null ? GetRandomFieldToShot() : GetNeighbourFieldToShot(_lastHit);
+        return targetField.Position;
     }
 
-    private void ProcessFieldAndShipHit(Field field)
+    public void ChangeOpponentFieldState(Position position, FieldState newState)
+    {
+        _lastHit = newState == FieldState.Hit ? position : null!;
+
+        var field = OpponentBoard.Fields.Find(field =>
+            field.Position.Row == position.Row && field.Position.Column == position.Column);
+        field!.State = newState;
+    }
+    
+    public FieldState ProcessOwnFieldAndShipHit(Position position)
     {
         ++TotalHits;
-        field.State = FieldState.Hit;
-        ProcessShipHit(field.OccupyingShip);
+        var field = OwnBoard.Fields.Find(field =>
+            field.Position.Row == position.Row && field.Position.Column == position.Column)!;
+
+        switch (field.State)
+        {
+            case FieldState.Empty:
+                field.State = FieldState.Miss;
+                break;
+            case FieldState.Occupied:
+                field.State = FieldState.Hit;
+                var ship = field.OccupyingShip!;
+                ++ship.Hits;
+                if (ship.IsSunk)
+                {
+                    OwnBoard.MarkOccupiedFieldsAsSunk(ship);
+                }
+                break;
+        }
+        return field.State;
     }
 
-    private void ProcessShipHit(Ship ship)
+    public List<Position> GetAllSunkShipPositionsFromFirstSunkField(Position position)
     {
-        ++ship.Hits;
-        if (ship.IsSunk)
-        {
-            OpponentBoard.MarkFieldsAsSunk(ship);
-        }
+        var sunkField = OwnBoard.Fields.Find(field =>
+            field.Position.Row == position.Row && field.Position.Column == position.Column);
+        return OwnBoard.GetFieldsOccupiedByShip(sunkField.OccupyingShip)
+            .Select(field => field.Position)
+            .ToList();
+    }
+
+    public void MarkOpponentSunkFieldsFromPositions(List<Position> positions)
+    {
+        OpponentBoard.MarkFieldsAsSunkByPositions(positions);
     }
 
     private bool PlaceShipRandomlyOrReturnFalse(Ship ship)

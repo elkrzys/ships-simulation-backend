@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using ShipsSimulationBackend.Models;
 
 namespace ShipsSimulationBackend.Controllers;
 
@@ -6,22 +7,17 @@ namespace ShipsSimulationBackend.Controllers;
 [Route("[controller]")]
 public class GameController : ControllerBase
 {
+    private readonly Game _game;
     public GameController()
     {
-        // todo initialization
+        _game = new Game();
     }
 
     [HttpPost("play")]
     public IActionResult Play()
     {
-        // todo method to begin the game
-        return Ok();
-    }
-
-    [HttpGet("result")]
-    public IActionResult GetResult()
-    {
-        // todo method to return result of the game { winner, boards final fields }
+        _game.Play();
+        //todo return result
         return Ok();
     }
 }
