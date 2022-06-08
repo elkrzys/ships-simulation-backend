@@ -21,9 +21,7 @@ public class Game
 
     public void Play()
     {
-        Player1.PlaceShipsRandomly();
-        Player2.PlaceShipsRandomly();
-        SetBeginner();
+        InitGame();
 
         while (!Player1.IsLost && !Player2.IsLost)
         {
@@ -46,8 +44,15 @@ public class Game
     private void SetBeginner()
     {
         var random = new Random();
-        _roundPlayer = random.Next(Int16.MaxValue) % 2;
+        _roundPlayer = random.Next(0, 2);
         Beginner = _roundPlayer == 0 ? "Player 1" : "Player 2";
+    }
+
+    private void InitGame()
+    {
+        Player1.PlaceShipsRandomly();
+        Player2.PlaceShipsRandomly();
+        SetBeginner();
     }
 
     private void PlayRound(Player currentPlayer, Player opponent)

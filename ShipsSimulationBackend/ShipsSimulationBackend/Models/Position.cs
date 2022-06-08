@@ -1,12 +1,8 @@
 ﻿namespace ShipsSimulationBackend.Models;
 
-public class Position
+public record Position(int Row, int Column)
 {
-    public int Row { get; set; }
-    public int Column { get; set; }
-    public Position(int row, int column)
-    {
-        Row = row;
-        Column = column;
-    }
+    public int Row { get; set; } = Row;
+    
+    public int Column { get; set; } = Column;
 }

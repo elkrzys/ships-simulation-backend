@@ -4,7 +4,7 @@ using ShipsSimulationBackend.Models;
 namespace ShipsSimulationBackend.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("game")]
 public class GameController : ControllerBase
 {
     private readonly Game _game;
@@ -13,8 +13,8 @@ public class GameController : ControllerBase
         _game = new Game();
     }
 
-    [HttpPost("play")]
-    public IActionResult Play()
+    [HttpPost("simulate")]
+    public IActionResult Simulate()
     {
         _game.Play();
         //todo return result
