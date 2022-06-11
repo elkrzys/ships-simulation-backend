@@ -14,10 +14,9 @@ public class GameController : ControllerBase
     }
 
     [HttpPost("simulate")]
-    public IActionResult Simulate()
+    public ActionResult<GameResult> Simulate()
     {
         _game.Play();
-        //todo return result
-        return Ok();
+        return Ok(GameResult.FromGame(_game));
     }
 }

@@ -32,7 +32,6 @@ public class Game
             }
             else
             {
-                ++TotalRounds;
                 PlayRound(Player2, Player1);
                 _roundPlayer = 0;
             }

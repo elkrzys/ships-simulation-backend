@@ -8,8 +8,6 @@ public class Player
     
     public int TotalShots { get; set; }
     
-    public int TotalHits { get; set; }
-    
     private readonly List<Ship> _ships;
     
     private readonly Random _random;
@@ -24,7 +22,6 @@ public class Player
         _lastHit = null;
 
         TotalShots = 0;
-        TotalHits = 0;
 
         _ships = new List<Ship>
         {
@@ -70,7 +67,6 @@ public class Player
 
     public FieldState ProcessOwnFieldAndShipHit(Position position)
     {
-        ++TotalHits;
         var field = OwnBoard.GetFieldOnPosition(position);
 
         switch (field.State)
@@ -82,12 +78,10 @@ public class Player
                 field.State = FieldState.Hit;
                 var ship = field.OccupyingShip!;
                 ++ship.Hits;
-                ++TotalHits;
                 if (ship.IsSunk)
                 {
                     OwnBoard.MarkOccupiedFieldsAsSunk(ship);
                 }
-
                 break;
         }
 

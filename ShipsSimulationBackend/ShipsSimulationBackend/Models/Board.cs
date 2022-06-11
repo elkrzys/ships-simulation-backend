@@ -2,11 +2,11 @@
 
 public class Board
 {
-    private readonly List<Field> _fields;
+    public List<Field> Fields { get; }
     
     public Board()
     {
-        _fields = new List<Field>();
+        Fields = new List<Field>();
         InitBoard();
     }
     
@@ -22,7 +22,7 @@ public class Board
 
     public List<Field> GetFieldsBetweenPositions(Position begin, Position end)
     {
-        return _fields
+        return Fields
             .Where(f =>
                 f.Position.Row >= begin.Row && f.Position.Column >= begin.Column &&
                 f.Position.Row <= end.Row && f.Position.Column <= end.Column).ToList();
@@ -36,7 +36,7 @@ public class Board
 
     public List<Position> GetRemainingHitPositions()
     {
-        return _fields
+        return Fields
             .Where(field => field.State == FieldState.Hit)
             .Select(field => field.Position)
             .ToList();
@@ -44,7 +44,7 @@ public class Board
 
     public List<Field> GetAvailableFields()
     {
-        return _fields.FindAll(field => field.State is FieldState.Empty or FieldState.Occupied).ToList();
+        return Fields.FindAll(field => field.State is FieldState.Empty or FieldState.Occupied).ToList();
     }
     
     public void MarkOccupiedFieldsAsSunk(Ship ship)
@@ -54,18 +54,18 @@ public class Board
     
     public void MarkFieldsAsSunkByPositions(IEnumerable<Position> positions)
     {
-        _fields.FindAll(field => positions.Any(position => field.Position == position))
+        Fields.FindAll(field => positions.Any(position => field.Position == position))
             .ForEach(field => field.State = FieldState.Sunk);
     }
 
     public List<Field> GetFieldsOccupiedByShip(Ship ship)
     {
-        return _fields.FindAll(field => field.OccupyingShip != null && field.OccupyingShip.Type == ship.Type);
+        return Fields.FindAll(field => field.OccupyingShip != null && field.OccupyingShip.Type == ship.Type);
     }
 
     public Field GetFieldOnPosition(Position position)
     {
-        return _fields.Find(field => field.Position == position)!;
+        return Fields.Find(field => field.Position == position)!;
     }
     
     private void InitBoard()
@@ -74,7 +74,7 @@ public class Board
         {
             foreach (var column in Enumerable.Range(1, 10))
             {
-                _fields.Add(new Field
+                Fields.Add(new Field
                 {
                     Position = new Position(row, column) 
                 });
