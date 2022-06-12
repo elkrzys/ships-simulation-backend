@@ -91,7 +91,7 @@ public class Player
     public IEnumerable<Position> GetAllSunkShipPositionsFromFirstSunkField(Position position)
     {
         var sunkField = OwnBoard.GetFieldOnPosition(position);
-        return OwnBoard.GetFieldsOccupiedByShip(sunkField.OccupyingShip).Select(field => field.Position);
+        return OwnBoard.GetFieldsOccupiedByShip(sunkField.OccupyingShip!).Select(field => field.Position);
     }
 
     public void MarkOpponentSunkFieldsFromPositions(IEnumerable<Position> positions)
