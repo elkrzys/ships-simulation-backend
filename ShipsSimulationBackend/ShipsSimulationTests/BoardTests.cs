@@ -115,6 +115,23 @@ public class BoardTests
         Assert.AreEqual(expectedFields.Select(field => field.Position), actualFields.Select(field => field.Position));
     }
 
+    [Test]
+    public void MustReturnAllRemainingHitPositions()
+    {
+        //given
+        var board = new Board();
+        var expectedPositions = new List<Position> { new(1, 1), new(1, 2), new(1, 3) };
+        board.Fields[0].State = FieldState.Hit;
+        board.Fields[1].State = FieldState.Hit;
+        board.Fields[2].State = FieldState.Hit;
+        
+        //when
+        var actualPositions = board.GetRemainingHitPositions();
+        
+        //then
+        Assert.AreEqual(expectedPositions, actualPositions);
+    }
+
     private static IEnumerable<TestCaseData> NeighboursTestCases
     {
         get
