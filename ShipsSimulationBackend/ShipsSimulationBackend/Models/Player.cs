@@ -1,9 +1,12 @@
-﻿namespace ShipsSimulationBackend.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace ShipsSimulationBackend.Models;
 
 public class Player
 {
     public Board OwnBoard { get; }
     
+    [JsonIgnore]
     public Board OpponentBoard { get; }
     
     public int TotalShots { get; set; }
@@ -35,6 +38,7 @@ public class Player
         _random = new Random();
     }
 
+    [JsonIgnore]
     public bool IsLost => _ships.All(ship => ship.IsSunk);
 
     public void PlaceShipsRandomly()
