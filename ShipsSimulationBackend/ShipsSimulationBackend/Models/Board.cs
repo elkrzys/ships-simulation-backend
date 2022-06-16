@@ -17,7 +17,32 @@ public class Board
             return false;
         }
         
-        return GetFieldsBetweenPositions(begin, end).All(field => field.OccupyingShip == null);
+        return !AreAnyShipsNearby(begin, end);
+    }
+
+    private bool AreAnyShipsNearby(Position begin, Position end)
+    {
+       var newBegin = new Position(begin);
+       var newEnd = new Position(end);
+       
+       // check rectangle around the ship
+       if (newBegin.Row > 1) --newBegin.Row;
+       if (newBegin.Column > 1) --newBegin.Column;
+       if (newEnd.Row < 10) ++newEnd.Row;
+       if (newEnd.Column < 10) ++newEnd.Column;
+
+       for (var row = newBegin.Row; row <= newEnd.Row; row++)
+       {
+           for (var column = newBegin.Column; column <= newEnd.Column; column++)
+           {
+               if (Fields.Find(field => field.Position == new Position(row, column))!.State == FieldState.Occupied)
+               {
+                   return true;
+               }
+           }
+       }
+
+       return false;
     }
 
     public List<Field> GetFieldsBetweenPositions(Position begin, Position end)
